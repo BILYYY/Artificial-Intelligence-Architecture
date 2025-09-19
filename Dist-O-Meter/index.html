@@ -11,8 +11,9 @@
     }
     *{box-sizing:border-box}
     body{margin:0;background:linear-gradient(160deg,#0b1022 0%,#0f172a 60%,#0b132b 100%);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;}
-    header{max-width:1100px;margin:24px auto 12px;padding:0 16px}
+    header{max-width:1100px;margin:24px auto 12px;padding:0 16px;text-align:center}
     h1{font-size:clamp(28px,3.4vw,42px);line-height:1.1;margin:0 0 8px}
+    header img{height:60px;margin:12px 0}
     .subtitle{color:var(--muted)}
     .wrap{max-width:1100px;margin:0 auto;padding:16px;display:grid;grid-template-columns:1fr;gap:16px}
     .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}
@@ -51,65 +52,63 @@
 <body>
   <header>
     <h1>Dist‑o‑Meter 📏 — no‑electronics distance estimator</h1>
-    <div class="subtitle">Use a grid + angles to estimate distance to a target with your DIY Monster‑can viewer. Combines both methods and averages them for extra stability.</div>
+    <img src="AIlogo.png" alt="Monster AI Logo" style="height:80px;" />
+    <div class="subtitle">Powered by Monster™ Can AI  — uses grid + angles to estimate distance and then pretends it’s smart.</div>
   </header>
 
   <main class="wrap two">
     <section class="card">
       <h2>Inputs</h2>
-
       <div class="grid">
         <div class="card" style="grid-column: span 12">
-          <h3 style="margin:0 0 8px">Method A — Grid (similar triangles)</h3>
+          <h3>Method A — Grid (similar triangles)</h3>
           <div class="row3">
             <div>
-              <label>Real size of the feature you’re measuring <span class="hint">(cm)</span></label>
-              <input id="realSize" type="number" step="0.01" placeholder="e.g. 30 (height of book)" />
+              <label>Real size of feature (cm)</label>
+              <input id="realSize" type="number" step="0.01" min="0.01" placeholder="e.g. 30 (height of book)" />
             </div>
             <div>
-              <label>Squares the feature spans on your grid <span class="hint">(count)</span></label>
-              <input id="squaresCount" type="number" step="1" placeholder="e.g. 12" />
+              <label>Squares you counted (n)</label>
+              <input id="squaresCount" type="number" step="1" min="1" placeholder="e.g. 12" />
             </div>
             <div>
-              <label>Size of one square <span class="hint">(cm)</span></label>
-              <input id="squareSize" type="number" step="0.01" value="1" />
+              <label>Size of one square (side, cm)</label>
+              <input id="squareSize" type="number" step="0.01" min="0.01" value="1" />
             </div>
           </div>
           <div class="row">
             <div>
-              <label>Distance from eye to grid (can length) <span class="hint">L in cm</span></label>
-              <input id="eyeToGrid" type="number" step="0.01" placeholder="Measure inside length of can" />
+              <label>Tube length (eye→grid L, cm)</label>
+              <input id="eyeToGrid" type="number" step="0.01" min="0.01" placeholder="Measure inside length of can" />
             </div>
             <div>
-              <label class="hint">Formula: <code>D_grid = (RealSize × L) / (Squares × SquareSize)</code></label>
-              <div class="tiny muted">Count squares along the same dimension as the real size (height with height or width with width).</div>
+              <label class="hint">Formula: <code>D_grid = (S × L) / (n × a)</code></label>
             </div>
           </div>
         </div>
 
         <div class="card" style="grid-column: span 12">
-          <h3 style="margin:0 0 8px">Method B — Two‑angle triangulation</h3>
+          <h3>Method B — Two‑angle triangulation</h3>
           <div class="row3">
             <div>
-              <label>Baseline between viewpoints <span class="hint">b in cm</span></label>
-              <input id="baseline" type="number" step="0.01" placeholder="e.g. 20 (shift device sideways)" />
+              <label>Baseline b (cm)</label>
+              <input id="baseline" type="number" step="0.01" min="0.01" placeholder="e.g. 20" />
             </div>
             <div>
-              <label>Angle from left position <span class="hint">θ₁ in °</span></label>
+              <label>Front angle θ₁ (°)</label>
               <input id="angle1" type="number" step="0.01" placeholder="e.g. 8" />
             </div>
             <div>
-              <label>Angle from right position <span class="hint">θ₂ in °</span></label>
+              <label>Side angle θ₂ (°)</label>
               <input id="angle2" type="number" step="0.01" placeholder="e.g. 7" />
             </div>
           </div>
           <div class="row">
             <div>
               <label class="hint">Formula: <code>D_tri = b / (tan θ₁ + tan θ₂)</code></label>
-              <div class="tiny muted">Stand roughly facing the target both times. Measure the angle from your forward line to the target line.</div>
             </div>
             <div>
-              <label>Unit for output</label>
+              <label>Output unit</label>
               <select id="unit">
                 <option value="cm">centimeters (cm)</option>
                 <option value="m">meters (m)</option>
@@ -130,62 +129,43 @@
         <div class="card">
           <div class="muted tiny">Grid estimate</div>
           <div class="result" id="gridOut">—</div>
-          <div class="tiny muted">via similar triangles</div>
         </div>
         <div class="card">
           <div class="muted tiny">Triangulation estimate</div>
           <div class="result" id="triOut">—</div>
-          <div class="tiny muted">two angles + baseline</div>
         </div>
         <div class="card">
-          <div class="muted tiny">Combined (average)</div>
+          <div class="muted tiny">Combined average</div>
           <div class="result" id="avgOut">—</div>
-          <div class="tiny muted">(Grid + Triangulation) ÷ 2</div>
         </div>
       </div>
-
-      <div class="row" style="margin-top:12px">
-        <button class="btn-ghost" id="exportBtn">Export inputs/results (JSON)</button>
-        <button class="btn-ghost" id="resetBtn">Reset</button>
-      </div>
-
     </section>
 
     <aside class="card">
-      <h2>Build guide & user manual</h2>
+      <h2>Build guide & manual</h2>
+      <details open>
+        <summary>How to use</summary>
+        <p><strong>Squares:</strong> Look through the drinking end, count how many grid squares the target spans. Enter the count, the real size of the target dimension, the tube length (L), and square size.</p>
+        <p><strong>Angles:</strong> Stand at position A, aim straw at target, read front angle θ₁. Move sideways b cm, aim again, read side angle θ₂. Enter b, θ₁, θ₂.</p>
+      </details>
 
       <details open>
-        <summary>What you built (Monster‑can viewer)</summary>
-        <ol class="tiny" style="line-height:1.45">
-          <li>Cut the bottom off a Monster bottle/can so you have a tube. Fix a paper grid (1×1 cm squares) at the wide/open end (the end away from your eye). This is the aperture plane.</li>
-          <li>Put your eye at the drinking end (like where you’d sip) — that is the "lens"/eye point.</li>
-          <li>Tape a small paper protractor near the eye end and a straw/skewer as a sight pipe to help align and read angles.</li>
-          <li>Measure and record the inside length of the tube: <code>L</code> (cm). This is the distance from your eye to the grid.</li>
-        </ol>
-      </details>
-
-      <details>
-        <summary>How to take measurements</summary>
+        <summary>⚡ Monster™ AI Sensor Module (joke)</summary>
         <div class="tiny">
-          <p><strong>Method A — Grid:</strong> Look through the eye end. Choose one dimension of the target (height or width) that you know in real life (or can measure). Count how many grid squares the target spans <em>along that same dimension</em>. Enter: real size (cm), number of squares, square size (usually 1 cm), and L (tube length).</p>
-          <p><strong>Method B — Two‑angle:</strong> Stand at point A facing forward. Aim the sight pipe at the target and read angle θ₁ from your straight‑ahead line. Slide sideways by a measured baseline <code>b</code> (e.g., 20 cm) to point B, keep facing forward, aim again and read θ₂. Enter b, θ₁, θ₂.</p>
+          <p>Your can is now officially “AI-powered”! 🎉</p>
+          <ul>
+            <li>🔮 <strong>AI Grid Vision™</strong>: counts the squares <em>you</em> counted.</li>
+            <li>🤖 <strong>AngleNet™</strong>: reads the angles <em>you</em> read.</li>
+            <li>🧪 <strong>Deep Can Learning</strong>: averages both numbers and calls it “AI”.</li>
+          </ul>
+          <p class="muted tiny">Disclaimer: 100% human-powered math, zero electronics.</p>
         </div>
-      </details>
-
-      <details>
-        <summary>Tips for accuracy</summary>
-        <ul class="tiny">
-          <li>Keep the grid perpendicular to the tube; don’t let it tilt.</li>
-          <li>Use the same eye position each time (mark a notch at the eye end).</li>
-          <li>Smaller angles (under ~15°) give more reliable tan() readings with a paper protractor.</li>
-          <li>Repeat 3–5 times and average.</li>
-        </ul>
       </details>
     </aside>
   </main>
 
   <footer class="footer">
-    Dist‑o‑Meter • MIT License • Works offline
+    Dist‑o‑Meter • MIT License • Monster Can Edition
   </footer>
 
   <script>
@@ -193,9 +173,9 @@
     const fmt = (x, unit)=> isFinite(x) ? (unit==='m' ? (x/100).toFixed(3)+' m' : x.toFixed(1)+' cm') : '—';
 
     function calc(){
-      const realSize = parseFloat($("realSize").value);
-      const squares = parseFloat($("squaresCount").value);
-      const squareSize = parseFloat($("squareSize").value || '1');
+      const S = parseFloat($("realSize").value);
+      const n = parseFloat($("squaresCount").value);
+      const a = parseFloat($("squareSize").value || '1');
       const L = parseFloat($("eyeToGrid").value);
       const b = parseFloat($("baseline").value);
       const a1 = parseFloat($("angle1").value) * Math.PI/180;
@@ -203,8 +183,8 @@
       const unit = $("unit").value;
 
       let Dgrid = NaN, Dtri = NaN;
-      if([realSize,squares,squareSize,L].every(v=>v>0)){
-        Dgrid = (realSize * L) / (squares * squareSize);
+      if([S,n,a,L].every(v=>v>0)){
+        Dgrid = (S * L) / (n * a);
       }
       if([b,a1,a2].every(v=>v>0)){
         const denom = Math.tan(a1) + Math.tan(a2);
@@ -218,45 +198,16 @@
     }
 
     $("calcBtn").addEventListener('click', calc);
-    $("resetBtn").addEventListener('click', ()=>{
-      ["realSize","squaresCount","squareSize","eyeToGrid","baseline","angle1","angle2"].forEach(id=> $(id).value = '');
-      $("unit").value='cm';
-      ["gridOut","triOut","avgOut"].forEach(id=> $(id).textContent='—');
-    });
-
     $("demoBtn").addEventListener('click', ()=>{
-      $("realSize").value = 30;     
-      $("squaresCount").value = 12; 
-      $("squareSize").value = 1;    
-      $("eyeToGrid").value = 25;    
-      $("baseline").value = 20;     
-      $("angle1").value = 8;        
-      $("angle2").value = 7;        
+      $("realSize").value = 30;
+      $("squaresCount").value = 12;
+      $("squareSize").value = 1;
+      $("eyeToGrid").value = 25;
+      $("baseline").value = 20;
+      $("angle1").value = 8;
+      $("angle2").value = 7;
       $("unit").value = 'm';
       calc();
-    });
-
-    $("exportBtn").addEventListener('click', ()=>{
-      const data = {
-        realSize: $("realSize").value,
-        squaresCount: $("squaresCount").value,
-        squareSize: $("squareSize").value,
-        eyeToGrid: $("eyeToGrid").value,
-        baseline: $("baseline").value,
-        angle1_deg: $("angle1").value,
-        angle2_deg: $("angle2").value,
-        unit: $("unit").value,
-        results: {
-          grid: $("gridOut").textContent,
-          triangulation: $("triOut").textContent,
-          average: $("avgOut").textContent
-        }
-      };
-      const blob = new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = 'dist-o-meter-results.json'; a.click();
-      URL.revokeObjectURL(url);
     });
   </script>
 </body>
